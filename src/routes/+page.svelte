@@ -3,36 +3,35 @@
 </svelte:head>
 
 <script>
-    let inputValue = '';
     let placeholderName = 'Display Name';
     let placeholderCode = "Room Name";
     let placeholderPassword = "Room Password (Optional)"
+
+    let displayNameInput;
+    let roomNameInput;
+    let roomPasswordInput;
+
     let modalEl;
     let joinModal;
-    let body;
     let createModal;
-    
 
-    function handleInput(event) {
-        inputValue = event.target.value;
-    }
 
     function handleBlur(input) {
         switch (input) {
             case "name": 
-                if (!inputValue) {
+                if (!displayNameInput.value) {
                     placeholderName = 'Display Name';
                 }
             break;
 
             case "code":
-                if (!inputValue) {
+                if (!roomNameInput.value) {
                     placeholderCode = 'Room Name';
                 }
             break;
 
             case "password":
-                if (!inputValue) {
+                if (!roomPasswordInput.value) {
                     placeholderPassword = "Room Password (Optional)"
                 }
             break;
@@ -41,7 +40,14 @@
   }
 
   const modal = (mode) => {
+    document.documentElement.style.setProperty('--placeHolderColor', '#FFFFFF');
     if (modalEl.style.display === "none") {
+        if (displayNameInput.value === '') {
+        displayErrorMsg('Please Type a Display Name!');
+        return
+    } else {
+        localStorage.setItem('Display Name', displayNameInput.value);
+    }
         modalEl.style.display = "block";
         if (mode === 'join') {
             joinModal.style.display = 'flex';
@@ -61,9 +67,28 @@ const handleClick = (event) => {
     }
 
 }
+
+const displayErrorMsg = (error, input) => {
+    document.documentElement.style.setProperty('--placeHolderColor', 'red');
+    if (!input) {
+        placeholderName = error;
+    } else {
+        input == roomNameInput;
+        placeholderCode = error;
+    }
+}
+
+const joinRoom = () => {
+    if (roomNameInput.value === "") {
+        displayErrorMsg("Please Enter Room Name", roomNameInput);
+    } else {
+
+    }
+}
+
 </script>
 
-<body bind:this={body} on:mousedown={handleClick}>
+<body on:mousedown={handleClick}>
     <section class="container">
         <div class="headings-container">
             <h1>AnonChat</h1>
@@ -71,7 +96,7 @@ const handleClick = (event) => {
         </div>
 
         <div class="input-container">
-            <input type="text" maxlength="25" placeholder={placeholderName} on:input={handleInput} on:blur={() => handleBlur("name")} on:click={() => placeholderName = ""}>
+            <input type="text" maxlength="25" placeholder={placeholderName} bind:this = {displayNameInput} on:blur={() => handleBlur("name")} on:click={() => placeholderName = ""}>
         </div>
 
         <div class="btn-container">
@@ -84,16 +109,16 @@ const handleClick = (event) => {
             
             <div class="modal-container" bind:this={joinModal}>
                 <h1>Join Room</h1>
-                <input type="text" maxlength="20" placeholder={placeholderCode} on:input={handleInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
-                <button class="btns">Join Room</button>
+                <input type="text" maxlength="20" placeholder={placeholderCode} bind:this={roomNameInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
+                <button class="btns" on:click={joinRoom}>Join Room</button>
                 <button class="btns" on:click={modal}>Back</button>
             </div>
             <div class="modal-container" bind:this={createModal}>
                 <h1>Create Room</h1>
-                <input type="text" maxlength="20" placeholder={placeholderCode} on:input={handleInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
-                <input type="text" maxlength="20" placeholder={placeholderPassword} on:input={handleInput} on:blur={() => handleBlur("password")} on:click={() => placeholderPassword = ""}>
+                <input type="text" maxlength="20" placeholder={placeholderCode} bind:this={roomNameInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
+                <input type="text" id='passwordText' maxlength="20" placeholder={placeholderPassword} bind:this={roomPasswordInput} on:blur={() => handleBlur("password")} on:click={() => placeholderPassword = ""}>
 
-                <button class="btns">Create Room</button>
+                <button class="btns" on:click={joinRoom}>Create Room</button>
                 <button class="btns" on:click={modal}>Back</button>
             </div>
         </div>
@@ -101,6 +126,13 @@ const handleClick = (event) => {
 </body>
 
 <style>
+    :root {
+        --placeHolderColor: #FFFFFF;
+    }
+input {
+    color: #FFFFFF;
+}
+
     body {
         margin: 0;
         padding: 0;
@@ -144,7 +176,7 @@ const handleClick = (event) => {
     }
 
     .input-container input::placeholder {
-        color: #FFFFFF;
+        color: var(--placeHolderColor)
     }
 
     .btn-container {
@@ -217,16 +249,19 @@ const handleClick = (event) => {
         background-color: #3C3C3B;
         border: 2px solid #00FF00;
         border-radius: 40px;
-        color: #FFFFFF;
         outline: none;
         font-size: 24px;
         text-align: center;
         margin-bottom: 1rem;
 }
 
+
 .modal-container input::placeholder {
-        color: #FFFFFF;
+    color: var(--placeHolderColor)
 }
 
+#passwordText::placeholder {
+    color: #FFFFFF;
+}
 
 </style>
