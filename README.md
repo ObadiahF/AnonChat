@@ -1,38 +1,17 @@
-# create-svelte
+**AnonChat - Connect and Chat Anonymously**
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Powered by Express.js and Socket.io
 
-## Creating a project
+**Features**
+1. No database so no messages are saved.
+2. No authenticated users.
+3. Protected global chat room.
+4. Ability to password protect rooms.
+5. New users joining a room won't have access to previous messages.
+6. Room passwords are deleted once there are no more users residing in the chat room.
 
-If you're seeing this, you've probably already done this step. Congrats!
+**Pictures**
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+![Screenshot from 2023-06-21 23-14-55](https://github.com/ObadiahF/AnonChat/assets/106855190/71461394-914e-4dda-a2e5-9fd92a1fdcd0)
+![Screenshot from 2023-06-21 23-10-25](https://github.com/ObadiahF/AnonChat/assets/106855190/369ca2a4-4d48-4d81-986f-358b8ce25637)
+![Screenshot from 2023-06-21 23-10-51](https://github.com/ObadiahF/AnonChat/assets/106855190/d932a716-4178-4818-bc5d-43c9ae5fe75c)
