@@ -6,15 +6,22 @@
     let placeholderName = 'Display Name';
     let placeholderCode = "Room Name";
     let placeholderPassword = "Room Password (Optional)"
-
     let displayNameInput;
+
+    //create
     let roomNameInput;
     let roomPasswordInput;
+
+    //join
+    let roomNameInputJoin;
+    let roomPasswordInputJoin;
 
     let modalEl;
     let joinModal;
     let createModal;
 
+    let error = null;
+    let errorMsg = "";
 
     function handleBlur(input) {
         switch (input) {
@@ -40,10 +47,10 @@
   }
 
   const modal = (mode) => {
-    document.documentElement.style.setProperty('--placeHolderColor', '#FFFFFF');
+    //document.documentElement.style.setProperty('--placeHolderColor', '#FFFFFF');
     if (modalEl.style.display === "none") {
         if (displayNameInput.value === '') {
-        displayErrorMsg('Please Type a Display Name!');
+        displayErrorMsg('Please Type a Display Name!', 'lobby');
         return
     } else {
         localStorage.setItem('Display Name', displayNameInput.value);
@@ -68,22 +75,49 @@ const handleClick = (event) => {
 
 }
 
-const displayErrorMsg = (error, input) => {
-    document.documentElement.style.setProperty('--placeHolderColor', 'red');
-    if (!input) {
-        placeholderName = error;
-    } else {
-        input == roomNameInput;
-        placeholderCode = error;
-    }
+
+
+const displayErrorMsg = (err, whereErrorIs) => {
+    error = whereErrorIs;
+
+    errorMsg = err;
 }
 
-const joinRoom = () => {
-    if (roomNameInput.value === "") {
-        displayErrorMsg("Please Enter Room Name", roomNameInput);
-    } else {
+const joinRoom = (isCreating) => {
 
+    if (isCreating) {
+        if (!roomNameInput.value || roomNameInput.value === "") {
+            displayErrorMsg("Please Enter Room Name", "create");
+            return;
+        }
+    } else {
+        if (!roomNameInputJoin.value || roomNameInputJoin.value === "") {
+            displayErrorMsg("Please Enter Room Name", "join");
+            return;
+        }
     }
+    
+    checkRoom( isCreating ? roomNameInput.value : roomNameInputJoin.value, isCreating ? roomPasswordInput.value : roomPasswordInputJoin.value, isCreating);
+
+}
+
+const checkRoom = async (roomName, roomPassword, isCreating) => {
+        const res = await fetch('http://localhost:8080/users', {
+            "roomName": roomName,
+            "roomPassword": roomPassword
+        }).catch (() => {
+            displayErrorMsg("Room failed to connect", isCreating ? "create" : "join");
+            console.log("error")
+        });
+
+    if (res.status === 200) {
+        localStorage.setItem("RoomPassword", roomPassword);
+        window.location = `chat/${roomName}`
+    } else {
+        displayErrorMsg("No room found", isCreating ? "create" : "join");
+    }
+    
+
 }
 
 </script>
@@ -93,6 +127,9 @@ const joinRoom = () => {
         <div class="headings-container">
             <h1>AnonChat</h1>
             <h3>Chat Anonymously</h3>
+            {#if error === "lobby"}
+                    <span class="error">Error: {errorMsg}</span>
+            {/if}
         </div>
 
         <div class="input-container">
@@ -100,7 +137,7 @@ const joinRoom = () => {
         </div>
 
         <div class="btn-container">
-            <button class="btns">Join Global Chat</button>
+            <button class="btns" on:click={() => {window.location = 'chat/global'}}>Join Global Chat</button>
             <button class="btns" on:click={() => modal('create')}>Create room</button>
             <button class="btns" on:click={() => modal('join')}>Join Room</button>
         </div>
@@ -109,16 +146,25 @@ const joinRoom = () => {
             
             <div class="modal-container" bind:this={joinModal}>
                 <h1>Join Room</h1>
-                <input type="text" maxlength="20" placeholder={placeholderCode} bind:this={roomNameInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
-                <button class="btns" on:click={joinRoom}>Join Room</button>
+                <div>
+                    {#if error === "join"}
+                        <span class="error">Error: {errorMsg}</span>
+                    {/if}
+                </div>
+                <input type="text" maxlength="20" placeholder={placeholderCode} bind:this={roomNameInputJoin} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
+                <input type="text" id='passwordText' maxlength="20" placeholder={placeholderPassword} bind:this={roomPasswordInputJoin} on:blur={() => handleBlur("password")} on:click={() => placeholderPassword = ""}>
+                <button class="btns" on:click={() => joinRoom()}>Join Room</button>
                 <button class="btns" on:click={modal}>Back</button>
             </div>
             <div class="modal-container" bind:this={createModal}>
                 <h1>Create Room</h1>
+                {#if error === "create"}
+                    <span class="error">Error: {errorMsg}</span>
+                {/if}
                 <input type="text" maxlength="20" placeholder={placeholderCode} bind:this={roomNameInput} on:blur={() => handleBlur("code")} on:click={() => placeholderCode = ""}>
                 <input type="text" id='passwordText' maxlength="20" placeholder={placeholderPassword} bind:this={roomPasswordInput} on:blur={() => handleBlur("password")} on:click={() => placeholderPassword = ""}>
 
-                <button class="btns" on:click={joinRoom}>Create Room</button>
+                <button class="btns" on:click={() => joinRoom(true)}>Create Room</button>
                 <button class="btns" on:click={modal}>Back</button>
             </div>
         </div>
@@ -146,18 +192,12 @@ input {
     .headings-container h1 {
         margin: 0;
         margin-top: 2rem;
-    }
-    .headings-container h3 {
-        margin: 0;
-        margin-bottom: 3rem;
-    }
-
-    .headings-container h1 {
         font-size: 5rem;
         color: #00FF00;
     }
-
     .headings-container h3 {
+        margin: 0;
+        margin-bottom: 2rem;
         font-size: 3rem;
         color: white;
     }
@@ -173,6 +213,7 @@ input {
         outline: none;
         font-size: 24px;
         text-align: center;
+        margin-top: 1rem;
     }
 
     .input-container input::placeholder {
@@ -262,6 +303,11 @@ input {
 
 #passwordText::placeholder {
     color: #FFFFFF;
+}
+
+.error {
+    color: red;
+    font-size: 24px;
 }
 
 @media (max-width: 367px) {

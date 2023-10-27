@@ -6,6 +6,9 @@
 <script>
 let textInput;
 
+export let data;
+const users = { data };
+
 const sendMessage = () => {
     const message = textInput.value;
 
@@ -25,7 +28,7 @@ const sendMessage = () => {
         </div>
         <div class="right-header">
             <button class="btns">Buy Me A Coffee</button>
-            <button class="btns">Leave Room</button>
+            <button class="btns" on:click={(() => {window.location = '/'})}>Leave Room</button>
         </div>
     </header>
 

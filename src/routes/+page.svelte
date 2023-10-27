@@ -4,7 +4,6 @@
 
 <script>
     import Lobby from "./lobby.svelte";
-    import Chat from "./chat.svelte";
 </script>
 
 <body>
