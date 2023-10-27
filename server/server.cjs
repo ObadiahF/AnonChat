@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const port = 8080
+const { HASHER } = require('./utlis/hasher.cjs')
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST"]
@@ -22,17 +23,14 @@ const io = require("socket.io")(server, {
 
 const rooms = [
   {
-    "roomName": "GLOBAL CHAT",
+    "roomName": "GLOBAL",
     "roomPassword": "",
     "users": []
   }
 ];
 
-app.get('/', (req, res) => {
-  res.status(200).send('test');
-})
-
 app.post('/createRoom', (req, res) => {
+
   try {
     const { body } = req;
     let { roomName, roomPassword } = body;
@@ -49,7 +47,6 @@ app.post('/createRoom', (req, res) => {
     })
     
     if (!roomPassword) {
-      console.log('no')
       roomPassword = "";
     }
 
@@ -58,24 +55,26 @@ app.post('/createRoom', (req, res) => {
     rooms.push(
       {
         roomName,
-        roomPassword,
+        "roomPassword": roomPassword === "" ? "" : HASHER(roomPassword),
         "users": []
       }
     )
-
+    
     res.sendStatus(200);
-  } catch {
+  } catch (e){
+    console.log(e);
     res.sendStatus(400);
   }
 
 });
 
 
-app.get('/checkGamesExistance', (req, res) => {
+app.get('/checkGamesExistance:id', (req, res) => {
   try {
     const { body } = req;
-    let { roomName, roomPassword } = body;
+    const { id } = req.params;
 
+    let { roomPassword } = body;
     if (!roomName) {
       res.status(406).send('No Room Name Provided')
     }
@@ -100,10 +99,42 @@ app.get('/checkGamesExistance', (req, res) => {
   }
 })
 
+app.get('/users:id', (req, res) => {
+  const { body } = req;
+  const { id } = req.params;
+  let { roomPassword } = body;
+
+  const foundRoom = roomDetailsVerification(id, roomPassword);
+
+  if (foundRoom === false) {
+    res.sendStatus(404);
+  } else {
+    res.status(200).send(foundRoom.users);
+  }
+})
+
 io.on('connection', (client) => {
 
-
 })
+
+const roomDetailsVerification = (roomName, roomPassword) => {
+  let room;
+  rooms.forEach((one) => {
+    if (roomName === one.roomName) {
+      room = one;
+    }
+  })
+
+  if (!room) return false;
+  if (room.roomPassword === "") return room;
+
+  if (room.roomPassword === roomPassword) {
+    return room;
+  } else {
+    return false;
+  }
+  
+}
 
 
 
@@ -114,6 +145,4 @@ server.listen(3000, () => {
 
 app.listen(port, () => {
     console.log(`Express Port: ${port}`)
-})
-  
-  
+}) 
